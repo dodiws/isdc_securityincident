@@ -538,7 +538,7 @@ class getSAMParameters(ModelResource):
 
     def post_list(self, request, **kwargs):
         self.method_check(request, allowed=['post'])
-        response = self.getStats2(request)
+        response = self.getStats(request)
         return self.create_response(request, response)   
 
     def getStats(self, request):
@@ -758,7 +758,7 @@ class getIncidentsRaw(ModelResource):
 
     def post_list(self, request, **kwargs):
         self.method_check(request, allowed=['post'])
-        response = self.getStats2(request)
+        response = self.getStats(request)
         return self.create_response(request, response)   
 
     def getStats(self, request):
