@@ -556,7 +556,7 @@ class getSAMParameters(ModelResource):
 
         resource = AfgIncidentOasis.objects.all()
 
-        if filterLock[0]!='':
+        if filterLock[0]:
             resource = resource.filter(wkb_geometry__intersects=filterLock[0])
 
         if len(temp_group)==1:
