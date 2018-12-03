@@ -77,10 +77,18 @@ import json
 from securitydb.models import SecureFeature
 from tastypie.authorization import DjangoAuthorization
 
-def get_dashboard_meta(page_name):
-    if page_name == 'security':
-        return {'function':dashboard_security, 'template':'dash_haccess.html'}
-    return None
+def get_dashboard_meta():
+	return {
+		'pages': [
+			{
+				'name': 'security',
+				'function': dashboard_security, 
+				'template': 'dash_security.html',
+				'menutitle': 'Security',
+			},
+		],
+		'menutitle': 'Security',
+	}
 
 def getQuickOverview(request, filterLock, flag, code, includes=[], excludes=[]):
     response = {}
@@ -548,8 +556,6 @@ class getSAMParameters(ModelResource):
         temp_group = dict(request.POST)['query_type']
         filterLock = dict(request.POST)['filterlock']
         # print filterLock
-
-
 
         response = {}
         response['objects'] = []
