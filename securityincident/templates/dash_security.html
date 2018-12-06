@@ -1,0 +1,132 @@
+{% extends "dashboard_base.html" %}
+{% load i18n %}
+{% load base_tags %}
+{% load app_filters %}
+
+{% block dashboard_breadcrumb %} 
+    <a href="{% url "dashboard_detail" %}?page=security" class="breadcrumb">{% trans "Humanitarian Access" %}</a>
+    {% include "links_title.html" %}
+{% endblock dashboard_breadcrumb %}
+
+{% block dashboard_content %}
+    <div class="row">
+        {% include "qlink_list.html" %}
+        <div class="right">
+            <div id="reportrange" class="right" style="background: #fff; cursor: pointer; padding: 0px 10px; border: 0px">
+                <i class="fa fa-calendar"></i>&nbsp; {% trans "Incident between" %} :
+                <span></span> <b class="caret hidden-print"></b>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">
+                        {% trans "Map" %}
+                    </span>
+                    <div class="row">
+                        <div class="col s12 l3 xl2">
+                            <div id="layercontrol">
+                                <div class="input-field">
+                                    <select id="haccessOpt">
+                                        <option value="total_incident">Total Incidents</option>
+                                        <option value="total_violent">Violent Incidents</option>
+                                        <option value="total_injured">Injured Casualties</option>
+                                        <option value="total_dead">Dead Casualties</option>
+                                    </select>
+                                    <label for="haccessOpt">Choose Layer :</label>
+                                </div>
+
+                                <label for="slideRange">Range :</label>
+                                <div id="slideRange">
+                                    <div id="keypress"></div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="input-field col s12 l6">
+                                            <input type="text" id="input-with-keypress-0" class="">
+                                        </div>
+                                        <div class="input-field col s12 l6">
+                                            <input type="text" id="input-with-keypress-1" class="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <label for="themes">Pick a theme :</label>
+                                <div id="themes">
+                                    <button class="theme active" data-btn="YlOrRd"></button>
+                                    <button class="theme" data-btn="PuRd"></button>
+                                    <button class="theme" data-btn="GnBu"></button>
+                                    <button class="theme" data-btn="Blues"></button>
+                                    <button class="theme" data-btn="BuGn"></button>
+                                    <button class="theme" data-btn="BuPu"></button>
+                                    <button class="theme" data-btn="Greens"></button>
+                                    <button class="theme" data-btn="Greys"></button>
+                                    <button class="theme" data-btn="Oranges"></button>
+                                    <button class="theme" data-btn="OrRd"></button>
+                                    <button class="theme" data-btn="PuBu"></button>
+                                    <button class="theme" data-btn="PuBuGn"></button>
+                                    <button class="theme" data-btn="Purples"></button>
+                                    <button class="theme" data-btn="RdPu"></button>
+                                    <button class="theme" data-btn="Reds"></button>
+                                    <button class="theme" data-btn="YlGn"></button>
+                                    <button class="theme" data-btn="YlGnBu"></button>
+                                    <button class="theme" data-btn="YlOrBr"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s12 l9 xl6">
+                            <div id="leaflet_haccess_map" class="map-size"></div>
+                        </div>
+                        <div class="col s12 l12 xl4">
+                            <div id="mapInfo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s12">
+            <div class="card card-graph">
+                <div class="card-header red darken-3 white-text z-depth-2">
+                    <span class="card-title">{% trans "Graph of Incident and Casualties Trend by Incident Type" %}</span>
+                    <i class="icon-people_affected_population left"></i>
+                    <span class="card-title right">{% readable panels.pop_depth.total_atrisk %}</span>
+                </div>
+                <div class="card-image">
+                    <div class="row">
+                        <div class="col m6">
+                            <div id="chart_polar_incident_type" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='["Armed Opposition Group", "Civilians", "Government", "Humanitarian Community", "Infrastructure", "International Humanitarian Community", "International Military", "Police / Military Government", "Unknown"]' data-val='[
+                            {
+                                "type": "Incidents",
+                                "data": [845, 764, 695, 70, 15, 11, 18, 5311, 66]
+                            },{
+                                "type": "Dead",
+                                "data": [55, 929, 373, 97, 17, 7, 16, 4660, 7]
+                            }
+                            ]'
+                            ></div>
+                        </div>
+                        <div class="col m4">
+                            <div class="card-panel">
+                                <span>{% trans 'Select Incident Type' %}</span>
+                                <div class="right">
+                                    <form class="form-inline">
+                                        <div class="">
+                                            <label class="panel-select-all">
+                                                    <input type="checkbox" id="selecctall1" class="styled" checked=""/>&nbsp;{% trans 'Select All' %}
+                                            </label>
+                                        </div>
+                                        <button class="btn btn-xs btn-default hidden-print ply-trget">{% trans "Apply" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
