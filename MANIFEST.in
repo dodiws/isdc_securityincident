@@ -1,0 +1,7 @@
+include LICENSE
+include VERSION
+include README.rst
+recursive-include securityincident/initialdata *
+recursive-include securityincident/locale *
+recursive-include securityincident/templates *
+recursive-include securityincident/migrations *
