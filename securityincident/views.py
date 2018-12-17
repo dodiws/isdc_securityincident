@@ -86,10 +86,10 @@ def get_dashboard_meta():
 				'name': 'security',
 				'function': dashboard_security, 
 				'template': 'dash_security.html',
-				'menutitle': 'Security',
+				'menutitle': 'Humanitarian Access',
 			},
 		],
-		'menutitle': 'Security',
+		'menutitle': 'Humanitarian Access',
 	}
 
 def getQuickOverview(request, filterLock, flag, code, includes=[], excludes=[]):
@@ -641,10 +641,13 @@ class getSAMParameters(ModelResource):
 		if filterLock[0]:
 			resource = resource.filter(wkb_geometry__intersects=filterLock[0])
 
+		group_title = subgroup_title = None
 		if len(temp_group)==1:
+			group_title = temp_group[0]
 			resource = resource.filter(incident_date__gt=request.POST['start_date'],incident_date__lt=request.POST['end_date'])           
-			resource = resource.values(temp_group[0]).annotate(count=Count('uid'), affected=Sum('affected'), injured=Sum('injured'), violent=Sum('violent'), dead=Sum('dead')).order_by(temp_group[0])       
+			resource = resource.values(group_title).annotate(count=Count('uid'), affected=Sum('affected'), injured=Sum('injured'), violent=Sum('violent'), dead=Sum('dead')).order_by(group_title)       
 		elif len(temp_group)==2:
+			group_title, subgroup_title = temp_group
 			stat_type_filter = dict(request.POST)['incident_type']
 			stat_target_filter = dict(request.POST)['incident_target']
 			
@@ -661,7 +664,7 @@ class getSAMParameters(ModelResource):
 				resource = resource.filter(main_target__in=stat_target_filter)
 			
 			resourceAgregate = resource
-			resource = resource.values(temp_group[0],temp_group[1]).annotate(count=Count('uid'), affected=Sum('affected'), injured=Sum('injured'), violent=Sum('violent'), dead=Sum('dead')).order_by(temp_group[0],temp_group[1])
+			resource = resource.values(group_title,subgroup_title).annotate(count=Count('uid'), affected=Sum('affected'), injured=Sum('injured'), violent=Sum('violent'), dead=Sum('dead')).order_by(group_title,subgroup_title)
 			resourceAgregate = resourceAgregate.aggregate(count=Count('uid'), affected=Sum('affected'), injured=Sum('injured'), violent=Sum('violent'), dead=Sum('dead'))
 
 			response['total_incident'] = resourceAgregate['count']
@@ -669,9 +672,30 @@ class getSAMParameters(ModelResource):
 			response['total_violent'] = resourceAgregate['violent']
 			response['total_dead'] = resourceAgregate['dead']
 
+		response['values'] = []
+		response['values_titles'] = [_('Title')]+[_(CASUALTY_GROUP4_TYPES[i]) for i in ['count','dead','injured','violent',]]
+		if subgroup_title and len(resource):
+			group = {'title':resource[0][group_title],'values':[]}
 		for i in resource:
 			i['visible']=True
 			response['objects'].append(i)
+			value = [
+				i[subgroup_title or group_title],
+				i['count'],
+				i['dead'],
+				i['injured'],
+				i['violent'],
+			]
+			if subgroup_title:
+				group['values'].append(value)
+				is_newgroup = bool(group['title'] != i[group_title])
+				is_lastloop = bool(i is resource[len(resource)-1])
+				if is_newgroup or is_lastloop:
+					response['values'].append(group)
+					group = {'title':i[group_title],'values':[],}
+			else:
+				response['values'].append(value)
+
 		# response['objects'] = resource
 		response['total_count'] = resource.count()
 
@@ -700,6 +724,8 @@ class getSAMParameters(ModelResource):
 
 				# date_N_days_ago = datetime.date.today() - row[0][1]
 				# response['last_incidentsync_ago'] = str(date_N_days_ago).split(',')[0]
+
+		response = dict_ext(response).without('objects')
 
 		return none_to_zero(response)
 
@@ -859,8 +885,8 @@ class getIncidentsRaw(ModelResource):
 		if len(temp_group)==1:
 			resource = resource.filter(incident_date__gt=request.POST['start_date'],incident_date__lt=request.POST['end_date']).order_by('-incident_date')
 		elif len(temp_group)==2:
-			stat_type_filter = dict(request.POST)['incident_type'];
-			stat_target_filter = dict(request.POST)['incident_target'];
+			stat_type_filter = dict(request.POST)['incident_type']
+			stat_target_filter = dict(request.POST)['incident_target']
 			
 			resource = resource.filter(incident_date__gt=request.POST['start_date'],incident_date__lt=request.POST['end_date']).order_by('-incident_date')
 
@@ -881,6 +907,8 @@ class getIncidentsRaw(ModelResource):
 				'date':i.incident_date,
 				'desc':i.description
 			})
+		response['values_titles'] = [_('Date'),_('Description'),]
+		response['values'] = [[i.incident_date,i.description,] for i in resource]
 
 		response['total_count'] = resource.count()
 
@@ -893,6 +921,8 @@ class getIncidentsRaw(ModelResource):
 				response['last_incidentsync'] = row[0][1].strftime("%Y-%m-%d")
 
 				# cursor.close()
+
+		response = dict_ext(response).without('objects')
 
 		return none_to_zero(response)
 
@@ -949,7 +979,7 @@ class getIncidentsRaw(ModelResource):
 
 		return none_to_zero(response)
 
-def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[], daterange=''):
+def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[], datafilter={}):
 
 	if 'daterange' in request.GET:
 		daterange = request.GET['daterange']
@@ -957,6 +987,12 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		enddate = datetime.date.today()
 		startdate = datetime.date.today() - datetime.timedelta(days=365)
 		daterange = startdate.strftime("%Y-%m-%d")+','+enddate.strftime("%Y-%m-%d")
+
+	datafilter = {
+		'daterange':daterange,
+		'incident_type':filter(None,request.GET.get('incident_type','').split(',')),
+		'incident_target':filter(None,request.GET.get('incident_target','').split(',')),	
+	}
 
 	# incident_type = request.GET.get('incident_type','').split(',')
 	# incident_target = request.GET.get('incident_target','').split(',')
@@ -966,11 +1002,6 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 	if include_section('getCommonUse', includes, excludes):
 		response.update(getCommonUse(request, flag, code))
 
-	datafilter = {
-		'daterange':daterange,
-		'incident_type':filter(None,request.GET.get('incident_type','').split(',')),
-		'incident_target':filter(None,request.GET.get('incident_target','').split(',')),	
-	}
 	response['source'] = source = dict_ext(getSecurity(request, filterLock, flag, code, includes=includes, excludes=excludes, datafilter=datafilter))
 	panels = response.path('panels')
 	barcharts = response.path('panels','charts','bar')
@@ -982,6 +1013,7 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		'number_of_incidents_by_incident_type':'Number of Incidents by Incident Type'
 	}
 	for k,t in titles.items():
+		barcharts.path(k)['key'] = k
 		barcharts.path(k)['title'] = t
 		barcharts.path(k)['labels'] = source['incident_type']
 		barcharts.path(k)['values'] = [{
@@ -994,6 +1026,7 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		'number_of_incidents_by_target_type':'Number of Incidents by Target Type'
 	}
 	for k,t in titles.items():
+		barcharts.path(k)['key'] = k
 		barcharts.path(k)['title'] = t
 		barcharts.path(k)['labels'] = source['incident_target']
 		barcharts.path(k)['values'] = [{
@@ -1006,6 +1039,7 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		'graph_of_incident_and_casualties_trend_by_target_type':'Graph of Incident and Casualties Trend by Target Type'
 	}
 	for k,t in titles.items():
+		spidercharts.path(k)['key'] = k
 		spidercharts.path(k)['title'] = t
 		spidercharts.path(k)['labels'] = source['incident_type']
 		spidercharts.path(k)['values'] = [{
@@ -1013,7 +1047,28 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 			'values':[i[t] for i in source['incident_type_group']]
 		} for t in CASUALTY_TYPES_ORDER]
 
+	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_incident_type')
+	chart['key'] = 'graph_of_incident_and_casualties_trend_by_incident_type'
+	chart['title'] = 'Graph of Incident and Casualties Trend by Incident Type'
+	chart['labels'] = source['incident_type']
+	chart['labels_all'] = [t['main_type'] for t in source['main_type_child']]
+	chart['values'] = [{
+		'title':CASUALTY_GROUP4_TYPES[t],
+		'values':[i[t] for i in source['incident_type_group']]
+	} for t in CASUALTY_GROUP4_TYPES_ORDER]
+
+	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_target_type')
+	chart['key'] = 'graph_of_incident_and_casualties_trend_by_target_type'
+	chart['title'] = 'Graph of Incident and Casualties Trend by Target Type'
+	chart['labels'] = source['incident_target']
+	chart['labels_all'] = [t['main_target'] for t in source['main_target_child']]
+	chart['values'] = [{
+		'title':CASUALTY_GROUP4_TYPES[t],
+		'values':[i[t] for i in source['incident_target_group']]
+	} for t in CASUALTY_GROUP4_TYPES_ORDER]
+
 	table = tables['incidents_and_casualties_by_incident_type'] = dict_ext()
+	chart['key'] = 'incidents_and_casualties_by_incident_type'
 	table['title'] = _('Incidents and Casualties by Incident Type')
 	table['child'] = []
 	for i in source['incident_type_group']:
@@ -1025,6 +1080,7 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		} for j in i['child']]
 
 	table = tables['incident_and_casualties_trend_by_target_type'] = dict_ext()
+	chart['key'] = 'incident_and_casualties_trend_by_target_type'
 	table['title'] = _('Incidents and Casualties by Target Type')
 	table['child'] = []
 	for i in source['incident_target_group']:
@@ -1037,6 +1093,7 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 
 	tables['number_of_incident_and_casualties_overview'] = {
 		'title':_('Number of Incident and Casualties Overview'),
+		'key':'number_of_incident_and_casualties_overview',
 		'child':[{
 			'code':i['code'],
 			'value':[i['na_en'],i['total_incident'],i['total_violent'],i['total_injured'],i['total_dead']],
@@ -1046,13 +1103,93 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 
 	tables['list_of_latest_incidents'] = {
 		'title':_('List of Latest Incidents'),
+		'key':'list_of_latest_incidents',
 		'child':[[i['incident_date'],i['description'],] for i in source['incident_list_100']],
 	}
 
-	titles = {
-		'Graph of Incident and Casualties Trend by Incident Type':'Graph of Incident and Casualties Trend by Incident Type', 
-		'Graph of Incident and Casualties Trend by Target Type':'Graph of Incident and Casualties Trend by Target Type',
-		'':'',
-	}
+	if include_section('GeoJson', includes, excludes):
+		response['GeoJson'] = geojsonadd_security(response)
 
 	return response
+
+class SecurityStatisticResource(ModelResource):
+
+	class Meta:
+		# authorization = DjangoAuthorization()
+		resource_name = 'statistic_security'
+		allowed_methods = ['post']
+		detail_allowed_methods = ['post']
+		cache = SimpleCache()
+		object_class=None
+		# always_return_data = True
+ 
+	def getRisk(self, request):
+
+		p = urlparse(request.META.get('HTTP_REFERER')).path.split('/')
+		mapCode = p[3] if 'v2' in p else p[2]
+		map_obj = _resolve_map(request, mapCode, 'base.view_resourcebase', _PERMISSION_MSG_VIEW)
+
+		queryset = matrix(user=request.user,resourceid=map_obj,action='Interactive Calculation')
+		queryset.save()
+
+		requestbody = boundaryFilter = json.loads(request.body)
+
+		wkts = ['ST_GeomFromText(\''+i+'\',4326)' for i in boundaryFilter['spatialfilter']]
+		bring = wkts[-1] if len(wkts) else None
+		filterLock = 'ST_Union(ARRAY['+', '.join(wkts)+'])'
+
+		response = getSecurityStatistic(request, filterLock, boundaryFilter.get('flag'), boundaryFilter.get('code'), requestbody=requestbody)
+
+		return response
+
+	def post_list(self, request, **kwargs):
+		self.method_check(request, allowed=['post'])
+		response = self.getRisk(request)
+		return self.create_response(request, response)  
+
+def getSecurityStatistic(request,filterLock, flag, code, requestbody={}):
+
+	if 'daterange' in requestbody:
+		daterange = requestbody['daterange']
+	else:
+		enddate = datetime.date.today()
+		startdate = datetime.date.today() - datetime.timedelta(days=365)
+		daterange = startdate.strftime("%Y-%m-%d")+','+enddate.strftime("%Y-%m-%d")
+
+	datafilter = {
+		'daterange':daterange,
+		'incident_type':filter(None,requestbody.get('incident_type',[])),
+		'incident_target':filter(None,requestbody.get('incident_target',[])),	
+	}
+
+	response_dashboard = dashboard_security(request, filterLock, flag, code, datafilter=datafilter)
+	panels_list = dict_ext()
+
+	panels_list.path('charts')['bar'] = dict_ext(response_dashboard['panels']['charts']['bar']).valueslistbykey(['number_of_casualties_by_incident_type','number_of_incidents_by_incident_type','number_of_casualties_by_target_type','number_of_incidents_by_target_type',])
+	panels_list.path('charts')['spider'] = dict_ext(response_dashboard['panels']['charts']['spider']).valueslistbykey(['graph_of_incident_and_casualties_trend_by_incident_type','graph_of_incident_and_casualties_trend_by_target_type',])
+	panels_list['tables'] = dict_ext(response_dashboard['panels']['tables']).valueslistbykey(['incidents_and_casualties_by_incident_type','incident_and_casualties_trend_by_target_type','number_of_incident_and_casualties_overview','list_of_latest_incidents',])
+
+	return {'panels_list':panels_list}
+
+def geojsonadd_security(response):
+
+	source = response['source']
+	boundary = source['GeoJson']
+	source['lc_child_dict'] = {v['code']:v for v in source['lc_child']}
+
+	for k,v in enumerate(boundary.get('features',[])):
+		boundary['features'][k]['properties'] = prop = dict_ext(boundary['features'][k]['properties'])
+
+		# Checking if it's in a district
+		if response['areatype'] == 'district':
+			response['set_jenk_divider'] = 1
+			prop['na_en']=response['parent_label']
+			prop.update(dict_ext(source).within('total_dead','total_incident','total_injured','total_violent'))
+
+		else:
+			response['set_jenk_divider'] = 7
+			child = source['lc_child_dict'].get(prop['code'])
+			if child:
+				prop.update(dict_ext(child).within('na_en','total_dead','total_incident','total_injured','total_violent'))
+
+	return boundary
