@@ -226,17 +226,11 @@
             </div>
         </div>
 
-        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type panels.tables.incidents_and_casualties_by_incident_type panels.charts.bar.number_of_casualties_by_incident_type panels.charts.bar.number_of_incidents_by_incident_type as row1 %}
-        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_target_type panels.tables.incident_and_casualties_trend_by_target_type panels.charts.bar.number_of_casualties_by_target_type panels.charts.bar.number_of_incidents_by_target_type as row2 %}
+        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type panels.tables.incidents_and_casualties_by_incident_type panels.charts.bar.number_of_casualties_by_incident_type panels.charts.bar.number_of_incidents_by_incident_type "type" as row1 %}
+        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_target_type panels.tables.incident_and_casualties_trend_by_target_type panels.charts.bar.number_of_casualties_by_target_type panels.charts.bar.number_of_incidents_by_target_type "target" as row2 %}
         {% tolist row1 row2 as rows %}
 
         {% for row in rows %}
-            {{ row.0.title }}
-            {{ row.0.child }}
-            {{ row.0.labels }}
-            {{ row.0.labels_all }}
-            {{ row.0.key }}
-
             <div class="col s12">
                 <div class="card card-graph">
                     <div class="card-header red darken-3 white-text z-depth-2">
@@ -265,22 +259,57 @@
                                     <div class="">
                                         
                                         <div>
-                                            <!-- {#% get_current_language_bidi as LANGUAGE_BIDI %} -->
-                                            <!-- {#% for item in panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type %} -->
+                                            {% get_current_language_bidi as LANGUAGE_BIDI %}
+                                            {% for item in row.0.labels_all %}
                                                 <div id="indicatorType" class="child-checkbox">
                                                     <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
                                                         <label>
-                                                            <input type="checkbox" id="type{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ row.0.labels_all }}" {% if row.0.labels_all in incident_type %}checked=true{% endif %}>
-                                                            <span>{{ item.labels_all }} ({{item.count}} incidents)</span>
+                                                            <input type="checkbox" id="{{ row.4 }}{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ item.name }}" {% if item.selected %}checked=true{% endif %}>
+                                                            <span>{{ item.name }} ({{ item.count }} incidents)</span>
                                                         </label>
                                                     </div>
                                                 </div>
-                                            <!-- {#% endfor %} -->
+                                            {% endfor %}
                                         </div>
                                         
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col s12 m6 xl8">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">
+                            {{ row.1.title }}
+                        </span>
+                        <p>{% trans 'description' %}</p>
+                        <div class="table-responsive-scroll">
+                            <table id="" class="striped highlight">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">{% trans "Incident Type" %}</th>
+                                        <th colspan="2">{% trans "Incidents" %}</th>
+                                        <th colspan="2">{% trans "Casualties" %}</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="hum">{% trans "Total" %}</th>
+                                        <th class="hum">{% trans "Violent" %}</th>
+                                        <th class="hum">{% trans "Injured" %}</th>
+                                        <th class="hum">{% trans "Dead" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in row.1.child %}
+                                        <tr>
+                                            <td {% if item.isgroup %} class="boldRow" {% endif %}>{{ item.value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
