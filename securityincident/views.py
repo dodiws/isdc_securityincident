@@ -1034,27 +1034,27 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 			'values':[i[t] for i in source['incident_target_group']]
 		} for t in CASUALTY_TYPES_ORDER]
 
-	titles = {
-		'graph_of_incident_and_casualties_trend_by_incident_type':'Graph of Incident and Casualties Trend by Incident Type', 
-		'graph_of_incident_and_casualties_trend_by_target_type':'Graph of Incident and Casualties Trend by Target Type'
-	}
-	for k,t in titles.items():
-		spidercharts.path(k)['key'] = k
-		spidercharts.path(k)['title'] = t
-		spidercharts.path(k)['labels'] = source['incident_type']
-		spidercharts.path(k)['values'] = [{
-			'title':CASUALTY_TYPES[t],
-			'values':[i[t] for i in source['incident_type_group']]
-		} for t in CASUALTY_TYPES_ORDER]
+	# titles = {
+	# 	'graph_of_incident_and_casualties_trend_by_incident_type':'Graph of Incident and Casualties Trend by Incident Type', 
+	# 	'graph_of_incident_and_casualties_trend_by_target_type':'Graph of Incident and Casualties Trend by Target Type'
+	# }
+	# for k,t in titles.items():
+	# 	spidercharts.path(k)['key'] = k
+	# 	spidercharts.path(k)['title'] = t
+	# 	spidercharts.path(k)['labels'] = source['incident_type']
+	# 	spidercharts.path(k)['child'] = [{
+	# 		'type':CASUALTY_TYPES[t],
+	# 		'data':[i[t] for i in source['incident_type_group']]
+	# 	} for t in CASUALTY_TYPES_ORDER]
 
 	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_incident_type')
 	chart['key'] = 'graph_of_incident_and_casualties_trend_by_incident_type'
 	chart['title'] = 'Graph of Incident and Casualties Trend by Incident Type'
 	chart['labels'] = source['incident_type']
 	chart['labels_all'] = [t['main_type'] for t in source['main_type_child']]
-	chart['values'] = [{
-		'title':CASUALTY_GROUP4_TYPES[t],
-		'values':[i[t] for i in source['incident_type_group']]
+	chart['child'] = [{
+		'type':CASUALTY_GROUP4_TYPES[t],
+		'data':[i[t] for i in source['incident_type_group']]
 	} for t in CASUALTY_GROUP4_TYPES_ORDER]
 
 	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_target_type')
@@ -1062,9 +1062,9 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 	chart['title'] = 'Graph of Incident and Casualties Trend by Target Type'
 	chart['labels'] = source['incident_target']
 	chart['labels_all'] = [t['main_target'] for t in source['main_target_child']]
-	chart['values'] = [{
-		'title':CASUALTY_GROUP4_TYPES[t],
-		'values':[i[t] for i in source['incident_target_group']]
+	chart['child'] = [{
+		'type':CASUALTY_GROUP4_TYPES[t],
+		'data':[i[t] for i in source['incident_target_group']]
 	} for t in CASUALTY_GROUP4_TYPES_ORDER]
 
 	table = tables['incidents_and_casualties_by_incident_type'] = dict_ext()
