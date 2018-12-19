@@ -1016,9 +1016,9 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		barcharts.path(k)['key'] = k
 		barcharts.path(k)['title'] = t
 		barcharts.path(k)['labels'] = source['incident_type']
-		barcharts.path(k)['values'] = [{
-			'title':CASUALTY_TYPES[t],
-			'values':[i[t] for i in source['incident_type_group']]
+		barcharts.path(k)['child'] = [{
+			'name':CASUALTY_TYPES[t],
+			'data':[i[t] for i in source['incident_type_group']]
 		} for t in CASUALTY_TYPES_ORDER]
 
 	titles = {
@@ -1029,9 +1029,9 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 		barcharts.path(k)['key'] = k
 		barcharts.path(k)['title'] = t
 		barcharts.path(k)['labels'] = source['incident_target']
-		barcharts.path(k)['values'] = [{
-			'title':CASUALTY_TYPES[t],
-			'values':[i[t] for i in source['incident_target_group']]
+		barcharts.path(k)['child'] = [{
+			'name':CASUALTY_TYPES[t],
+			'data':[i[t] for i in source['incident_target_group']]
 		} for t in CASUALTY_TYPES_ORDER]
 
 	# titles = {
