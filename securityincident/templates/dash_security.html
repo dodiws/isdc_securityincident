@@ -9,12 +9,13 @@
 {% endblock dashboard_breadcrumb %}
 
 {% block dashboard_content %}
-    <div class="row">
+    <div class="row no-margin">
         {% include "qlink_list.html" %}
-        <div class="right">
-            <div id="reportrange" class="right" style="background: #fff; cursor: pointer; padding: 0px 10px; border: 0px">
+        <div class="input-field col s12 xl5 offset-xl3">
+            <div id="reportrange" class="grey-text text-darken-1" style="cursor: pointer; padding: 0px 10px; border: 1px solid; height: 28px;">
                 <i class="fa fa-calendar"></i>&nbsp; {% trans "Incident between" %} :
-                <span></span> <b class="caret hidden-print"></b>
+                <i class="material-icons right">keyboard_arrow_down</i>
+                <span ></span> <b class="caret hidden-print"></b>
             </div>
         </div>
     </div>
@@ -97,29 +98,38 @@
                 <div class="card-image">
                     <div class="row">
                         <div class="col m6">
-                            <div id="chart_polar_incident_type" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='["Armed Opposition Group", "Civilians", "Government", "Humanitarian Community", "Infrastructure", "International Humanitarian Community", "International Military", "Police / Military Government", "Unknown"]' data-val='[
-                            {
-                                "type": "Incidents",
-                                "data": [845, 764, 695, 70, 15, 11, 18, 5311, 66]
-                            },{
-                                "type": "Dead",
-                                "data": [55, 929, 373, 97, 17, 7, 16, 4660, 7]
-                            }
-                            ]'
+                            <div id="chart_polar_incident_type" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='{{ panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type.labels | jsonify | safe }}' data-val='{{ panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type.child | jsonify | safe }}'
                             ></div>
                         </div>
                         <div class="col m4">
                             <div class="card-panel">
-                                <span>{% trans 'Select Incident Type' %}</span>
-                                <div class="right">
-                                    <form class="form-inline">
-                                        <div class="">
-                                            <label class="panel-select-all">
-                                                    <input type="checkbox" id="selecctall1" class="styled" checked=""/>&nbsp;{% trans 'Select All' %}
-                                            </label>
-                                        </div>
-                                        <button class="btn btn-xs btn-default hidden-print ply-trget">{% trans "Apply" %}</button>
-                                    </form>
+                                <form class="">
+                                    <div class="right">
+                                        <label class="panel-select-all">
+                                            <input type="checkbox" class="filled-in" />
+                                            <span>{% trans 'Select All' %}</span>
+                                        </label>
+                                        <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
+                                    </div>
+                                    <span>{% trans 'Select Incident Type' %}</span>
+                                </form>
+
+                                <div class="">
+                                    
+                                    <div>
+                                        {% get_current_language_bidi as LANGUAGE_BIDI %}
+                                        {% for item in panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type %}
+                                            <div id="indicatorType" class="child-checkbox">
+                                                <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
+                                                    <label>
+                                                        <input type="checkbox" id="type{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ item.labels_all }}" {% if item.labels_all in incident_type %}checked=true{% endif %}>
+                                                        <span>{{ item.labels_all }} ({{item.count}} incidents)</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -128,5 +138,339 @@
             </div>
         </div>
 
+        <div class="col s12 m6 xl8">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">
+                        {% trans "Incidents and Casualties by Incident Type" %}
+                    </span>
+                    <p>{% trans 'description' %}</p>
+                    <div class="table-responsive-scroll">
+                        <table id="" class="striped highlight online_security">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">{% trans "Incident Type" %}</th>
+                                    <th colspan="2">{% trans "Incidents" %}</th>
+                                    <th colspan="2">{% trans "Casualties" %}</th>
+                                </tr>
+                                <tr>
+                                    <th class="hum">{% trans "Total" %}</th>
+                                    <th class="hum">{% trans "Violent" %}</th>
+                                    <th class="hum">{% trans "Injured" %}</th>
+                                    <th class="hum">{% trans "Dead" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for parent in panels.adm_road.parentdata %}
+                                    <td class="boldRow">{{parent}}</td>
+                                {% endfor %}
+                                {% for child in panels.adm_road.child %}
+                                    <tr class="selectable" onclick="window.document.location='?page=baseline&code={{child.code}}';">
+                                        {% for item in child.value %}
+                                            <td>{{item}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                
+                                {% for data in incident_type_group %}
+                                <tr>
+                                    <td class="boldRow">{{ data.main_type }}</td>
+                                    <td class="boldRow">{{ data.count }}</td>
+                                    <td class="boldRow">{{ data.violent }}</td>
+                                    <td class="boldRow">{{ data.injured }}</td>
+                                    <td class="boldRow">{{ data.dead }}</td>
+                                </tr>
+                                    {% for item in data.child %}
+                                    <tr>
+                                        <td>{{ item.type }}</td>
+                                        <td>{{ item.count }}</td>
+                                        <td>{{ item.violent }}</td>
+                                        <td>{{ item.injured }}</td>
+                                        <td>{{ item.dead }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <table class="striped highlight online">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Region" %}</th>
+                                    <th class="hum">{% trans "Highway" %}</th>
+                                    <th class="hum">{% trans "Primary" %}</th>
+                                    <th class="hum">{% trans "Secondary" %}</th>
+                                    <th class="hum">{% trans "Tertiary" %}</th>
+                                    <th class="hum">{% trans "Residential" %}</th>
+                                    <th class="hum">{% trans "Track" %}</th>
+                                    <th class="hum">{% trans "Path" %}</th>
+                                    <!-- <th class="hum">{% trans "River Crossing" %}</th>
+                                    <th class="hum">{% trans "Bridge" %}</th> -->
+                                    <th class="hum">{% trans "Total" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for parent in panels.adm_road.parentdata %}
+                                    <td class="boldRow">{{parent}}</td>
+                                {% endfor %}
+                                {% for child in panels.adm_road.child %}
+                                    <tr class="selectable" onclick="window.document.location='?page=baseline&code={{child.code}}';">
+                                        {% for item in child.value %}
+                                            <td>{{item}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type panels.tables.incidents_and_casualties_by_incident_type panels.charts.bar.number_of_casualties_by_incident_type panels.charts.bar.number_of_incidents_by_incident_type as row1 %}
+        {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_target_type panels.tables.incident_and_casualties_trend_by_target_type panels.charts.bar.number_of_casualties_by_target_type panels.charts.bar.number_of_incidents_by_target_type as row2 %}
+        {% tolist row1 row2 as rows %}
+
+        {% for row in rows %}
+            {{ row.0.title }}
+            {{ row.0.child }}
+            {{ row.0.labels }}
+            {{ row.0.labels_all }}
+            {{ row.0.key }}
+
+            <div class="col s12">
+                <div class="card card-graph">
+                    <div class="card-header red darken-3 white-text z-depth-2">
+                        <span class="card-title">{{ row.0.title }}</span>
+                        <i class="icon-people_affected_population left"></i>
+                    </div>
+                    <div class="card-image">
+                        <div class="row">
+                            <div class="col m6">
+                                <div id="chart_polar_{{ row.0.key }}" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='{{ row.0.labels | jsonify | safe }}' data-val='{{ row.0.child | jsonify | safe }}'
+                                ></div>
+                            </div>
+                            <div class="col m4">
+                                <div class="card-panel">
+                                    <form class="">
+                                        <div class="right">
+                                            <label class="panel-select-all">
+                                                <input type="checkbox" class="filled-in" />
+                                                <span>{% trans 'Select All' %}</span>
+                                            </label>
+                                            <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
+                                        </div>
+                                        <span>{% trans 'Select Incident Type' %}</span>
+                                    </form>
+    
+                                    <div class="">
+                                        
+                                        <div>
+                                            <!-- {#% get_current_language_bidi as LANGUAGE_BIDI %} -->
+                                            <!-- {#% for item in panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type %} -->
+                                                <div id="indicatorType" class="child-checkbox">
+                                                    <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
+                                                        <label>
+                                                            <input type="checkbox" id="type{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ row.0.labels_all }}" {% if row.0.labels_all in incident_type %}checked=true{% endif %}>
+                                                            <span>{{ item.labels_all }} ({{item.count}} incidents)</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            <!-- {#% endfor %} -->
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
     </div>
+{% endblock %}
+
+{% block extra_script %}
+
+    <script>
+        var centroid = boundary['centroid'];
+        var chosen_label = '{{parent_label}}';
+        // $(document).ready(function(){
+            // $('.cancelBtn').removeClass('btn btn-sm btn-default');
+            // $('.cancelBtn').addClass('btn-flat waves-effect waves-light');
+            // $('.applyBtn').removeClass('btn btn-sm btn-primary');
+            // $('.applyBtn').addClass('btn waves-effect waves-light');
+            
+        // });
+    </script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function(){
+
+            // Select All/None
+                $('.checkbox-group .parents-checkbox .panel-select-all :checkbox').change(function () {
+                    $(this).closest('.checkbox-group').find(':checkbox').not(this).prop('checked', this.checked).closest('label');
+                });
+
+                $('.child-checkbox :checkbox').change(function () {
+                    var $group = $(this).closest('.checkbox-group');
+                    $group.find('.parents-checkbox .panel-select-all :checkbox').prop('checked', !$group.find('.child-checkbox :checkbox:not(:checked)').length);
+                });
+            // /Select All/None
+
+            // DateRangePicker
+            var daterange = getParameterByName("daterange");
+            if (daterange == null){
+            var start = moment().subtract(365, 'days');
+            var end = moment();
+            } else {
+            var dateVar = daterange.split(',');
+            var start = moment(new Date(dateVar[0].substr(0, 4), parseInt(dateVar[0].substr(5, 2))-1, dateVar[0].substr(8, 2)));
+            var end = moment(new Date(dateVar[1].substr(0, 4), parseInt(dateVar[1].substr(5, 2))-1, dateVar[1].substr(8, 2)));;
+            }
+
+            function cb(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            }
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                ranges: {
+                '{% trans 'Today' %}': [moment(), moment()],
+                '{% trans 'Yesterday' %}': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '{% trans 'Last 7 Days' %}': [moment().subtract(6, 'days'), moment()],
+                '{% trans 'Last 30 Days' %}': [moment().subtract(29, 'days'), moment()],
+                '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
+                '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                '{% trans 'Last Year' %}': [moment().subtract(365, 'days'), moment()]
+                }
+            }, cb);
+
+            cb(start, end);
+
+            $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+                var url = $(location).attr("href");
+                if (daterange == null){
+                window.document.location = url+'&daterange='+picker.startDate.format('YYYY-MM-DD')+','+picker.endDate.format('YYYY-MM-DD');
+                }  else {
+                // url = url.replace(/(daterange=).*?(&)/,'$1' + picker.startDate.format('YYYY-MM-DD')+','+picker.endDate.format('YYYY-MM-DD') + '$2');
+                url = updateUrlParameter(url, 'daterange', picker.startDate.format('YYYY-MM-DD')+','+picker.endDate.format('YYYY-MM-DD'))
+
+                window.document.location = url;
+                }
+            });
+            // /DateRangePicker
+
+            $( "form.form-inline" ).submit(function( event ) {
+            event.preventDefault();
+            });
+
+            $('button.ply-trget').on('click', function(event) {
+                console.log("click");
+
+                var type_selected_param = '';
+                var target_selected_param = '';
+
+                var type_unselected = $("input[name='main_type_select[]']:checkbox:not(:checked)");
+                var type_selected = $("input[name='main_type_select[]']:checkbox:checked");
+
+                var target_unselected = $("input[name='main_target_select[]']:checkbox:not(:checked)");
+                var target_selected = $("input[name='main_target_select[]']:checkbox:checked");
+
+                // var type_unselected = $("#indicatorTarget :checkbox:not(:checked)");
+                // var type_selected = $("#indicatorTarget :checkbox:checked");
+
+                // var target_unselected = $("#indicatorType :checkbox:not(:checked)");
+                // var target_selected = $("#indicatorType :checkbox:checked");
+
+                if (type_unselected.length > 0) {
+                    // var type_array = type_selected.val();
+                    var type_array = [];
+                    type_selected.each( function () {
+                    type_array.push($(this).val());
+                    });
+                    type_selected_param += type_array;
+                }
+
+
+                if (target_unselected.length > 0) {
+                    // var target_array = $('#incidentTarget-select').val();
+                    var target_array = [];
+                    target_selected.each( function () {
+                    target_array.push($(this).val());
+                    });
+                    target_selected_param += target_array
+                }
+
+                if (type_selected.length == 0) {
+                    type_selected_param = 'noselection';
+                }
+
+                if (target_selected.length == 0) {
+                    target_selected_param = 'noselection';
+                }
+
+                var url = $(location).attr("href");
+
+                if (type_selected_param != ''){
+                    if (getParameterByName("incident_type") == null){
+                        url += '&incident_type='+type_selected_param;
+                    } else {
+                        url = updateUrlParameter(url, 'incident_type', type_selected_param);
+                    }
+
+                } else {
+                    url = removeParam('incident_type', url);
+                }
+
+                if (target_selected_param != ''){
+                    if (getParameterByName("incident_target") == null){
+                        url += '&incident_target='+target_selected_param;
+                    } else {
+                        url = updateUrlParameter(url, 'incident_target', target_selected_param)
+                    }
+
+                } else {
+                    url = removeParam('incident_target', url);
+                }
+
+                window.document.location = url;
+            });
+        });
+    </script>
+
+    <script>
+        // Accept datepicker-start or datepicker-end, as we need to initialize both anyway.
+        $("input[class*='datepicker-']").daterangepicker({
+            selectMonths: true,
+            selectYears: 100,
+            format: 'dd/mmm/yyyy',    // Canadian date format, eh.
+            onSet: function(obj){
+                let thisPicker = $(this)[0].$node;    // Needed to hack to get the thing I was after.
+
+                // Check if this is the start date
+                let classes = thisPicker.attr("class");
+                if (classes === undefined || classes.length === 0 || classes.indexOf("datepicker-start") < 0){
+                return;
+                }
+
+                // .datepicker-start must be wrapped in a div.input-field element (in this example), and
+                // .datepicker-end must be in the next div.input-field.  Change selectors for your conditions.
+                let parent1 = thisPicker.closest("div.input-field");    // This picker's parent
+                let parent2 = parent1.next("div.input-field");          // Next picker's parent
+                let picker2 = parent2.find(".datepicker-end");          // Matching 'end' picker
+                
+                // Set end picker minimum date, or whatever you need.
+                if(obj.select){
+                let dt = new Date(obj.select);
+                picker2.pickadate('picker').set('min', dt);
+                }
+
+                if(obj.hasOwnProperty('clear')){
+                picker2.pickadate('picker').set('min', false);
+                }
+            }
+        });
+    </script>
 {% endblock %}
