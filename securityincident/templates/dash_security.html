@@ -88,154 +88,16 @@
             </div>
         </div>
 
-        <div class="col s12">
-            <div class="card card-graph">
-                <div class="card-header red darken-3 white-text z-depth-2">
-                    <span class="card-title">{% trans "Graph of Incident and Casualties Trend by Incident Type" %}</span>
-                    <i class="icon-people_affected_population left"></i>
-                    <span class="card-title right">{% readable panels.pop_depth.total_atrisk %}</span>
-                </div>
-                <div class="card-image">
-                    <div class="row">
-                        <div class="col m6">
-                            <div id="chart_polar_incident_type" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='{{ panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type.labels | jsonify | safe }}' data-val='{{ panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type.child | jsonify | safe }}'
-                            ></div>
-                        </div>
-                        <div class="col m4">
-                            <div class="card-panel">
-                                <form class="">
-                                    <div class="right">
-                                        <label class="panel-select-all">
-                                            <input type="checkbox" class="filled-in" />
-                                            <span>{% trans 'Select All' %}</span>
-                                        </label>
-                                        <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
-                                    </div>
-                                    <span>{% trans 'Select Incident Type' %}</span>
-                                </form>
-
-                                <div class="">
-                                    
-                                    <div>
-                                        {% get_current_language_bidi as LANGUAGE_BIDI %}
-                                        {% for item in panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type %}
-                                            <div id="indicatorType" class="child-checkbox">
-                                                <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
-                                                    <label>
-                                                        <input type="checkbox" id="type{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ item.labels_all }}" {% if item.labels_all in incident_type %}checked=true{% endif %}>
-                                                        <span>{{ item.labels_all }} ({{item.count}} incidents)</span>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col s12 m6 xl8">
-            <div class="card">
-                <div class="card-content">
-                    <span class="card-title">
-                        {% trans "Incidents and Casualties by Incident Type" %}
-                    </span>
-                    <p>{% trans 'description' %}</p>
-                    <div class="table-responsive-scroll">
-                        <table id="" class="striped highlight online_security">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">{% trans "Incident Type" %}</th>
-                                    <th colspan="2">{% trans "Incidents" %}</th>
-                                    <th colspan="2">{% trans "Casualties" %}</th>
-                                </tr>
-                                <tr>
-                                    <th class="hum">{% trans "Total" %}</th>
-                                    <th class="hum">{% trans "Violent" %}</th>
-                                    <th class="hum">{% trans "Injured" %}</th>
-                                    <th class="hum">{% trans "Dead" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for parent in panels.adm_road.parentdata %}
-                                    <td class="boldRow">{{parent}}</td>
-                                {% endfor %}
-                                {% for child in panels.adm_road.child %}
-                                    <tr class="selectable" onclick="window.document.location='?page=baseline&code={{child.code}}';">
-                                        {% for item in child.value %}
-                                            <td>{{item}}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                                
-                                {% for data in incident_type_group %}
-                                <tr>
-                                    <td class="boldRow">{{ data.main_type }}</td>
-                                    <td class="boldRow">{{ data.count }}</td>
-                                    <td class="boldRow">{{ data.violent }}</td>
-                                    <td class="boldRow">{{ data.injured }}</td>
-                                    <td class="boldRow">{{ data.dead }}</td>
-                                </tr>
-                                    {% for item in data.child %}
-                                    <tr>
-                                        <td>{{ item.type }}</td>
-                                        <td>{{ item.count }}</td>
-                                        <td>{{ item.violent }}</td>
-                                        <td>{{ item.injured }}</td>
-                                        <td>{{ item.dead }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <table class="striped highlight online">
-                            <thead>
-                                <tr>
-                                    <th>{% trans "Region" %}</th>
-                                    <th class="hum">{% trans "Highway" %}</th>
-                                    <th class="hum">{% trans "Primary" %}</th>
-                                    <th class="hum">{% trans "Secondary" %}</th>
-                                    <th class="hum">{% trans "Tertiary" %}</th>
-                                    <th class="hum">{% trans "Residential" %}</th>
-                                    <th class="hum">{% trans "Track" %}</th>
-                                    <th class="hum">{% trans "Path" %}</th>
-                                    <!-- <th class="hum">{% trans "River Crossing" %}</th>
-                                    <th class="hum">{% trans "Bridge" %}</th> -->
-                                    <th class="hum">{% trans "Total" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for parent in panels.adm_road.parentdata %}
-                                    <td class="boldRow">{{parent}}</td>
-                                {% endfor %}
-                                {% for child in panels.adm_road.child %}
-                                    <tr class="selectable" onclick="window.document.location='?page=baseline&code={{child.code}}';">
-                                        {% for item in child.value %}
-                                            <td>{{item}}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type panels.tables.incidents_and_casualties_by_incident_type panels.charts.bar.number_of_casualties_by_incident_type panels.charts.bar.number_of_incidents_by_incident_type "type" as row1 %}
         {% tolist panels.charts.spider.graph_of_incident_and_casualties_trend_by_target_type panels.tables.incident_and_casualties_trend_by_target_type panels.charts.bar.number_of_casualties_by_target_type panels.charts.bar.number_of_incidents_by_target_type "target" as row2 %}
         {% tolist row1 row2 as rows %}
 
         {% for row in rows %}
+        <div class="row">
             <div class="col s12">
                 <div class="card card-graph">
                     <div class="card-header red darken-3 white-text z-depth-2">
                         <span class="card-title">{{ row.0.title }}</span>
-                        <i class="icon-people_affected_population left"></i>
                     </div>
                     <div class="card-image">
                         <div class="row">
@@ -244,11 +106,11 @@
                                 ></div>
                             </div>
                             <div class="col m4">
-                                <div class="card-panel">
-                                    <form class="">
+                                <div class="card-panel z-depth-1 checkbox-group">
+                                    <form class="parents-checkbox">
                                         <div class="right">
                                             <label class="panel-select-all">
-                                                <input type="checkbox" class="filled-in" />
+                                                <input type="checkbox" class="filled-in" checked=""/>
                                                 <span>{% trans 'Select All' %}</span>
                                             </label>
                                             <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
@@ -257,19 +119,18 @@
                                     </form>
     
                                     <div class="">
-                                        
                                         <div>
                                             {% get_current_language_bidi as LANGUAGE_BIDI %}
-                                            {% for item in row.0.labels_all %}
-                                                <div id="indicatorType" class="child-checkbox">
+                                            <div id="indicatorType" class="row no-margin child-checkbox">
+                                                {% for item in row.0.labels_all %}
                                                     <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
                                                         <label>
-                                                            <input type="checkbox" id="{{ row.4 }}{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_type_select[]" value="{{ item.name }}" {% if item.selected %}checked=true{% endif %}>
+                                                            <input type="checkbox" id="{{ row.4 }}{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_{{ row.4 }}_select[]" value="{{ item.name }}" {% if item.selected %}checked=true{% endif %}>
                                                             <span>{{ item.name }} ({{ item.count }} incidents)</span>
                                                         </label>
                                                     </div>
-                                                </div>
-                                            {% endfor %}
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                         
                                     </div>
@@ -280,7 +141,7 @@
                 </div>
             </div>
 
-            <div class="col s12 m6 xl8">
+            <div class="col s12 m6 xl4">
                 <div class="card">
                     <div class="card-content">
                         <span class="card-title">
@@ -288,7 +149,7 @@
                         </span>
                         <p>{% trans 'description' %}</p>
                         <div class="table-responsive-scroll">
-                            <table id="" class="striped highlight">
+                            <table id="" class="striped highlight online_security">
                                 <thead>
                                     <tr>
                                         <th rowspan="2">{% trans "Incident Type" %}</th>
@@ -304,9 +165,11 @@
                                 </thead>
                                 <tbody>
                                     {% for item in row.1.child %}
-                                        <tr>
-                                            <td {% if item.isgroup %} class="boldRow" {% endif %}>{{ item.value }}</td>
-                                        </tr>
+                                    <tr>
+                                        {% for child in item.value %}
+                                            <td {% if item.isgroup %} class="boldRow" {% endif %}>{{ child }}</td>
+                                        {% endfor %}
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -314,7 +177,99 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col s12 m6 xl4">
+                <div class="card card-graph">
+                    <div class="card-header red darken-3 white-text z-depth-2">
+                        <span class="card-title">{{ row.2.title }}</span>
+                    </div>
+                    <div class="card-image">
+                        <div id="{{ row.2.key }}" class="ch-size bar-chart" data-color="colorBar" data-yaxis='{{ row.2.labels | jsonify | safe }}' data-val='{{ row.2.child | jsonify | safe }}' ></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col s12 m6 xl4">
+                <div class="card card-graph">
+                    <div class="card-header red darken-3 white-text z-depth-2">
+                        <span class="card-title">{{ row.3.title }}</span>
+                    </div>
+                    <div class="card-image">
+                        <div id="{{ row.3.key }}" class="ch-size bar-chart" data-color="colorBar" data-yaxis='{{ row.3.labels | jsonify | safe }}' data-val='{{ row.3.child | jsonify | safe }}' ></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
+
+        <div class="col s12 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">
+                        {% trans "Number of Incident and Casualties Overview" %}
+                    </span>
+                    <p>{% trans "Summary of Incidents and Casualties occured in Afghanistan. The data is updated each working day." %}</p>
+                    <div class="table-responsive-scroll">
+                        <table id="" class="striped highlight online">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">{% trans "Region" %}</th>
+                                    <th colspan="2">{% trans "Incidents" %}</th>
+                                    <th colspan="2">{% trans "Casualties" %}</th>
+                                </tr>
+                                <tr>
+                                    <th class="hum">{% trans "Total" %}</th>
+                                    <th class="hum">{% trans "Violent" %}</th>
+                                    <th class="hum">{% trans "Injured" %}</th>
+                                    <th class="hum">{% trans "Dead" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for parent in panels.tables.number_of_incident_and_casualties_overview.parentdata %}
+                                    <td class="boldRow">{{parent}}</td>
+                                {% endfor %}
+                                {% for child in panels.tables.number_of_incident_and_casualties_overview.child %}
+                                    <tr class="selectable" onclick="jump_url({{data.code}});">
+                                        {% for item in child.value %}
+                                            <td>{{item}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s12 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title">
+                        {% trans "List of Latest Incidents" %}
+                    </span>
+                    <p>{% trans 'This table gives the details of the incidents occured in Afghanistan. It is restricted to show 100 latest incidents only.' %}</p>
+                    <div class="table-responsive-scroll">
+                        <table id="" class="striped highlight list_incident online">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Description" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in panels.tables.list_of_latest_incidents.child %}
+                                <tr>
+                                    <td>{{ item.0 |date:'M j, Y' }}</td>
+                                    <td>{{ item.1 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 {% endblock %}
@@ -324,6 +279,7 @@
     <script>
         var centroid = boundary['centroid'];
         var chosen_label = '{{parent_label}}';
+        var map_category = ['{% trans "Total Incidents" %}', '{% trans "Violence Incidents" %}', '{% trans "Injured" %}', '{% trans "Dead" %}'];
         // $(document).ready(function(){
             // $('.cancelBtn').removeClass('btn btn-sm btn-default');
             // $('.cancelBtn').addClass('btn-flat waves-effect waves-light');
@@ -350,12 +306,12 @@
             // DateRangePicker
             var daterange = getParameterByName("daterange");
             if (daterange == null){
-            var start = moment().subtract(365, 'days');
-            var end = moment();
+                var start = moment().subtract(365, 'days');
+                var end = moment();
             } else {
-            var dateVar = daterange.split(',');
-            var start = moment(new Date(dateVar[0].substr(0, 4), parseInt(dateVar[0].substr(5, 2))-1, dateVar[0].substr(8, 2)));
-            var end = moment(new Date(dateVar[1].substr(0, 4), parseInt(dateVar[1].substr(5, 2))-1, dateVar[1].substr(8, 2)));;
+                var dateVar = daterange.split(',');
+                var start = moment(new Date(dateVar[0].substr(0, 4), parseInt(dateVar[0].substr(5, 2))-1, dateVar[0].substr(8, 2)));
+                var end = moment(new Date(dateVar[1].substr(0, 4), parseInt(dateVar[1].substr(5, 2))-1, dateVar[1].substr(8, 2)));;
             }
 
             function cb(start, end) {
@@ -406,12 +362,6 @@
 
                 var target_unselected = $("input[name='main_target_select[]']:checkbox:not(:checked)");
                 var target_selected = $("input[name='main_target_select[]']:checkbox:checked");
-
-                // var type_unselected = $("#indicatorTarget :checkbox:not(:checked)");
-                // var type_selected = $("#indicatorTarget :checkbox:checked");
-
-                // var target_unselected = $("#indicatorType :checkbox:not(:checked)");
-                // var target_selected = $("#indicatorType :checkbox:checked");
 
                 if (type_unselected.length > 0) {
                     // var type_array = type_selected.val();
@@ -464,42 +414,10 @@
                     url = removeParam('incident_target', url);
                 }
 
-                window.document.location = url;
+                console.log(url);
+
+                // window.document.location = url;
             });
-        });
-    </script>
-
-    <script>
-        // Accept datepicker-start or datepicker-end, as we need to initialize both anyway.
-        $("input[class*='datepicker-']").daterangepicker({
-            selectMonths: true,
-            selectYears: 100,
-            format: 'dd/mmm/yyyy',    // Canadian date format, eh.
-            onSet: function(obj){
-                let thisPicker = $(this)[0].$node;    // Needed to hack to get the thing I was after.
-
-                // Check if this is the start date
-                let classes = thisPicker.attr("class");
-                if (classes === undefined || classes.length === 0 || classes.indexOf("datepicker-start") < 0){
-                return;
-                }
-
-                // .datepicker-start must be wrapped in a div.input-field element (in this example), and
-                // .datepicker-end must be in the next div.input-field.  Change selectors for your conditions.
-                let parent1 = thisPicker.closest("div.input-field");    // This picker's parent
-                let parent2 = parent1.next("div.input-field");          // Next picker's parent
-                let picker2 = parent2.find(".datepicker-end");          // Matching 'end' picker
-                
-                // Set end picker minimum date, or whatever you need.
-                if(obj.select){
-                let dt = new Date(obj.select);
-                picker2.pickadate('picker').set('min', dt);
-                }
-
-                if(obj.hasOwnProperty('clear')){
-                picker2.pickadate('picker').set('min', false);
-                }
-            }
         });
     </script>
 {% endblock %}
