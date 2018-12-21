@@ -113,7 +113,7 @@
                                                 <input type="checkbox" class="filled-in" checked=""/>
                                                 <span>{% trans 'Select All' %}</span>
                                             </label>
-                                            <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
+                                            <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="button">Apply</button>
                                         </div>
                                         <span>{% trans 'Select Incident Type' %}</span>
                                     </form>
@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            <div class="col s12 m6 xl4">
+            <div class="col s12 m6 xl6">
                 <div class="card">
                     <div class="card-content">
                         <span class="card-title">
@@ -178,24 +178,24 @@
                 </div>
             </div>
 
-            <div class="col s12 m6 xl4">
+            <div class="col s12 m6 xl3">
                 <div class="card card-graph">
                     <div class="card-header red darken-3 white-text z-depth-2">
                         <span class="card-title">{{ row.2.title }}</span>
                     </div>
                     <div class="card-image">
-                        <div id="{{ row.2.key }}" class="ch-size bar-chart" data-color="colorBar" data-yaxis='{{ row.2.labels | jsonify | safe }}' data-val='{{ row.2.child | jsonify | safe }}' ></div>
+                        <div id="{{ row.2.key }}" class="ch-size bar-chart" data-color="colorDefault" data-colorpoint="false" data-legend="true" data-yaxis='{{ row.2.labels | jsonify | safe }}' data-val='{{ row.2.child | jsonify | safe }}' ></div>
                     </div>
                 </div>
             </div>
 
-            <div class="col s12 m6 xl4">
+            <div class="col s12 m6 xl3">
                 <div class="card card-graph">
                     <div class="card-header red darken-3 white-text z-depth-2">
                         <span class="card-title">{{ row.3.title }}</span>
                     </div>
                     <div class="card-image">
-                        <div id="{{ row.3.key }}" class="ch-size bar-chart" data-color="colorBar" data-yaxis='{{ row.3.labels | jsonify | safe }}' data-val='{{ row.3.child | jsonify | safe }}' ></div>
+                        <div id="{{ row.3.key }}" class="ch-size bar-chart" data-color="colorDefault" data-colorpoint="false" data-legend="true" data-yaxis='{{ row.3.labels | jsonify | safe }}' data-val='{{ row.3.child | jsonify | safe }}' ></div>
                     </div>
                 </div>
             </div>
@@ -280,13 +280,6 @@
         var centroid = boundary['centroid'];
         var chosen_label = '{{parent_label}}';
         var map_category = ['{% trans "Total Incidents" %}', '{% trans "Violence Incidents" %}', '{% trans "Injured" %}', '{% trans "Dead" %}'];
-        // $(document).ready(function(){
-            // $('.cancelBtn').removeClass('btn btn-sm btn-default');
-            // $('.cancelBtn').addClass('btn-flat waves-effect waves-light');
-            // $('.applyBtn').removeClass('btn btn-sm btn-primary');
-            // $('.applyBtn').addClass('btn waves-effect waves-light');
-            
-        // });
     </script>
 
     <script type="text/javascript">
@@ -352,8 +345,6 @@
             });
 
             $('button.ply-trget').on('click', function(event) {
-                console.log("click");
-
                 var type_selected_param = '';
                 var target_selected_param = '';
 
@@ -414,9 +405,7 @@
                     url = removeParam('incident_target', url);
                 }
 
-                console.log(url);
-
-                // window.document.location = url;
+                window.document.location = url;
             });
         });
     </script>
