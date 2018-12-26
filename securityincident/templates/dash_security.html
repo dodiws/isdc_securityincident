@@ -22,11 +22,13 @@
 
     <div class="row">
         <div class="col s12">
-            <div class="card">
-                <div class="card-content">
+            <div class="card card-dashboard">
+                <div class="card-header red darken-2 white-text">
                     <span class="card-title">
                         {% trans "Map" %}
                     </span>
+                </div>
+                <div class="card-content">
                     <div class="row">
                         <div class="col s12 l3 xl2">
                             <div id="layercontrol">
@@ -142,14 +144,22 @@
             </div>
 
             <div class="col s12 m6 xl6">
-                <div class="card">
-                    <div class="card-content">
+                <div class="card card-dashboard">
+                    <div class="card-header red darken-2 white-text">
                         <span class="card-title">
                             {{ row.1.title }}
                         </span>
-                        <p>{% trans 'description' %}</p>
+                    </div>
+                    <div class="card-content">
+                        <p>
+                            {% if row1 %}
+                                {% trans "List of Incidents and Casualties grouped by Incident Type. The data is updated each working day." %}
+                            {% elif row2 %}
+                                {% trans "List of Incidents and Casualties grouped by Target Type. The data is updated each working day." %}
+                            {% endif %}
+                        </p>
                         <div class="table-responsive-scroll">
-                            <table id="" class="striped highlight online_security">
+                            <table id="" class="highlight online_security">
                                 <thead>
                                     <tr>
                                         <th rowspan="2">{% trans "Incident Type" %}</th>
@@ -203,14 +213,16 @@
         {% endfor %}
 
         <div class="col s12 m6">
-            <div class="card">
-                <div class="card-content">
+            <div class="card card-dashboard">
+                <div class="card-header red darken-2 white-text">
                     <span class="card-title">
                         {% trans "Number of Incident and Casualties Overview" %}
                     </span>
+                </div>
+                <div class="card-content">
                     <p>{% trans "Summary of Incidents and Casualties occured in Afghanistan. The data is updated each working day." %}</p>
                     <div class="table-responsive-scroll">
-                        <table id="" class="striped highlight online">
+                        <table id="" class="highlight online">
                             <thead>
                                 <tr>
                                     <th rowspan="2">{% trans "Region" %}</th>
@@ -243,14 +255,16 @@
         </div>
 
         <div class="col s12 m6">
-            <div class="card">
-                <div class="card-content">
+            <div class="card card-dashboard">
+                <div class="card-header red darken-2 white-text">
                     <span class="card-title">
                         {% trans "List of Latest Incidents" %}
                     </span>
+                </div>
+                <div class="card-content">
                     <p>{% trans 'This table gives the details of the incidents occured in Afghanistan. It is restricted to show 100 latest incidents only.' %}</p>
                     <div class="table-responsive-scroll">
-                        <table id="" class="striped highlight list_incident online">
+                        <table id="" class="highlight list_incident online">
                             <thead>
                                 <tr>
                                     <th>{% trans "Date" %}</th>
