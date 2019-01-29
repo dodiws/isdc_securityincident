@@ -1,0 +1,3 @@
+{% with chart=data.panels.charts.spider.graph_of_incident_and_casualties_trend_by_incident_type %}
+{% include "dash_chart_spider_security.html" with title=chart.title key="graph_of_incident_and_casualties_trend_by_incident_type" values=chart.child labels=chart.labels labels_all=chart.labels_all categorisation="type" %}
+{% endwith %}

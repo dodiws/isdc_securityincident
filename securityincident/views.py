@@ -92,54 +92,54 @@ def get_dashboard_meta():
 		'menutitle': 'Humanitarian Access',
 	}
 
-def getQuickOverview(request, filterLock, flag, code, includes=[], excludes=[]):
-	response = {}
-	# response.update(getSecurity(request, filterLock, flag, code, excludes=['getListEQ']))
-	rawFilterLock = filterLock if 'flag' in request.GET else None
-	# if 'daterange' in request.GET:
-	# 	daterange = request.GET.get('daterange')
-	# elif 'daterange' in request.POST:
-	# 	daterange = request.POST.get('daterange')
-	daterange = request.GET.get('daterange') or request.POST.get('daterange') or None
-	if not daterange:
-		enddate = datetime.date.today()
-		startdate = enddate - datetime.timedelta(days=365)
-		daterange = startdate.strftime("%Y-%m-%d")+','+enddate.strftime("%Y-%m-%d")
+# def getQuickOverview(request, filterLock, flag, code, includes=[], excludes=[]):
+# 	response = {}
+# 	# response.update(getSecurity(request, filterLock, flag, code, excludes=['getListEQ']))
+# 	rawFilterLock = filterLock if 'flag' in request.GET else None
+# 	# if 'daterange' in request.GET:
+# 	# 	daterange = request.GET.get('daterange')
+# 	# elif 'daterange' in request.POST:
+# 	# 	daterange = request.POST.get('daterange')
+# 	daterange = request.GET.get('daterange') or request.POST.get('daterange') or None
+# 	if not daterange:
+# 		enddate = datetime.date.today()
+# 		startdate = enddate - datetime.timedelta(days=365)
+# 		daterange = startdate.strftime("%Y-%m-%d")+','+enddate.strftime("%Y-%m-%d")
 
-	response['main_type_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_type')
+# 	response['main_type_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_type')
 
-	response['incident_type'] = request.GET.get('incident_type').split(',') or \
-		request.POST.get('incident_type') or \
-		(i['main_type'] for i in response['main_type_child'])
-	# incident_target = request.GET.get('incident_target').split(',') or request.POST.get('incident_target') or []
+# 	response['incident_type'] = request.GET.get('incident_type').split(',') or \
+# 		request.POST.get('incident_type') or \
+# 		(i['main_type'] for i in response['main_type_child'])
+# 	# incident_target = request.GET.get('incident_target').split(',') or request.POST.get('incident_target') or []
 
-	main_type_raw_data = getSAMParams(request, daterange, filterLock, flag, code, group='main_type', datafilter={'incident_type':response['incident_type']})
-	# response['incident_type'] = (i['main_type'] for i in response['main_type_child'])
-	# if 'incident_type' in request.GET:
-	# 	response['incident_type'] = request.GET['incident_type'].split(',')
-	response['incident_type_group']=[{
-		'count':i['count'],
-		'injured':i['injured'],
-		'violent':i['violent']+i['affected'],
-		'dead':i['dead'],
-		'main_type':i['main_type'],
-		'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', datafilter={'incident_type':[i['main_type']]})),
-	} for i in main_type_raw_data]
-	# for i in main_type_raw_data:
-	# 	response['incident_type_group'].append({'count':i['count'],'injured':i['injured'],'violent':i['violent']+i['affected'],'dead':i['dead'],'main_type':i['main_type'],'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', i['main_type']))})
+# 	main_type_raw_data = getSAMParams(request, daterange, filterLock, flag, code, group='main_type', datafilter={'incident_type':response['incident_type']})
+# 	# response['incident_type'] = (i['main_type'] for i in response['main_type_child'])
+# 	# if 'incident_type' in request.GET:
+# 	# 	response['incident_type'] = request.GET['incident_type'].split(',')
+# 	response['incident_type_group']=[{
+# 		'count':i['count'],
+# 		'injured':i['injured'],
+# 		'violent':i['violent']+i['affected'],
+# 		'dead':i['dead'],
+# 		'main_type':i['main_type'],
+# 		'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', datafilter={'incident_type':[i['main_type']]})),
+# 	} for i in main_type_raw_data]
+# 	# for i in main_type_raw_data:
+# 	# 	response['incident_type_group'].append({'count':i['count'],'injured':i['injured'],'violent':i['violent']+i['affected'],'dead':i['dead'],'main_type':i['main_type'],'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', i['main_type']))})
 
-	return response
+# 	return response
 
 # moved from geodb.geo_calc
 
-def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], datafilter={}):
+def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], datafilter={}, response=dict_ext()):
 	# rawFilterLock = None
 	# if 'flag' in request.GET:
 	#     rawFilterLock = filterLock
 	#     filterLock = 'ST_GeomFromText(\''+filterLock+'\',4326)'
 
 	# response = getCommonUse(request, flag, code)
-	response = dict_ext()
+	# response = dict_ext()
 
 	# enddate = datetime.date.today()
 	# startdate = datetime.date.today() - datetime.timedelta(days=365)
@@ -152,9 +152,12 @@ def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], dataf
 	# daterange = ','.join([datestart+' 00:00:00.000000', dateend+' 23:59:59.999999'])
 
 	daterange = datafilter.get('daterange')
-	rawCasualties = getIncidentCasualties(request, daterange, filterLock, flag, code)
-	for i in rawCasualties:
-		response[i]=rawCasualties[i]
+
+	if include_section('total_casualties', includes, excludes):
+		response.update(getIncidentCasualties(request, daterange, filterLock, flag, code))
+	# rawCasualties = getIncidentCasualties(request, daterange, filterLock, flag, code)
+	# for i in rawCasualties:
+	# 	response[i]=rawCasualties[i]
 
 	# dataHLT = []
 	# dataHLT.append(['', '# of',  { 'role': 'annotation' }])
@@ -183,8 +186,19 @@ def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], dataf
 	#         'titleX':'# of Casualties and Incident',
 	# })
 
-	response['main_type_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_type')
-	main_type_raw_data = getSAMParams(request, daterange, filterLock, flag, code, 'main_type', datafilter=datafilter)
+	if include_section('incident_type', includes, excludes):
+		response['main_type_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_type')
+		response['incident_type'] = datafilter.get('incident_type') or [i['main_type'] for i in response['main_type_child']]
+
+		main_type_raw_data = getSAMParams(request, daterange, filterLock, flag, code, 'main_type', datafilter=datafilter)
+		response['incident_type_group'] =[{
+			'count':i['count'],
+			'injured':i['injured'],
+			'violent':i['violent']+i['affected'],
+			'dead':i['dead'],
+			'main_type':i['main_type'],
+			'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', datafilter={'incident_type':[i['main_type']]}))
+		} for i in main_type_raw_data]
 
 	# data_main_type = []
 	# data_main_type.append(['', 'incident',{ 'role': 'annotation' }, 'dead',{ 'role': 'annotation' }, 'violent',{ 'role': 'annotation' }, 'injured',{ 'role': 'annotation' } ])
@@ -268,8 +282,19 @@ def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], dataf
 	#         }
 	#     ).get_image()
 
-	response['main_target_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_target')
-	main_target_raw_data = getSAMParams(request, daterange, filterLock, flag, code, 'main_target', datafilter=datafilter)
+	if include_section('incident_target', includes, excludes):
+		response['main_target_child'] = getSAMParams(request, daterange, filterLock, flag, code, 'main_target')
+		response['incident_target'] = datafilter.get('incident_target') or [i['main_target'] for i in response['main_target_child']]
+
+		main_target_raw_data = getSAMParams(request, daterange, filterLock, flag, code, 'main_target', datafilter=datafilter)
+		response['incident_target_group'] = [{
+			'count':i['count'],
+			'injured':i['injured'],
+			'violent':i['violent']+i['affected'],
+			'dead':i['dead'],
+			'main_target':i['main_target'],
+			'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'target', datafilter={'incident_target':[i['main_target']]}))
+		} for i in main_target_raw_data]
 
 	# data_main_target = []
 	# data_main_target.append(['', 'incident',{ 'role': 'annotation' }, 'dead',{ 'role': 'annotation' }, 'violent',{ 'role': 'annotation' }, 'injured',{ 'role': 'annotation' } ])
@@ -345,9 +370,6 @@ def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], dataf
 	#     ).get_image()
 
 
-	response['incident_type'] = datafilter.get('incident_type') or [i['main_type'] for i in response['main_type_child']]
-	response['incident_target'] = datafilter.get('incident_target') or [i['main_target'] for i in response['main_target_child']]
-
 	# for i in response['main_type_child']:
 	# 	response['incident_type'].append(i['main_type'])
 
@@ -363,27 +385,11 @@ def getSecurity(request, filterLock, flag, code, includes=[], excludes=[], dataf
 	# 	# print response['incident_target']
 
 	# data = getListIncidentCasualties(request, daterange, filterLock, flag, code)
-	response['lc_child'] = data = getListIncidentCasualties(request, daterange, filterLock, flag, code)
+	if include_section('lc_child', includes, excludes):
+		response['lc_child'] = data = getListIncidentCasualties(request, daterange, filterLock, flag, code)
 
-	response['incident_type_group'] =[{
-		'count':i['count'],
-		'injured':i['injured'],
-		'violent':i['violent']+i['affected'],
-		'dead':i['dead'],
-		'main_type':i['main_type'],
-		'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'type', datafilter={'incident_type':[i['main_type']]}))
-	} for i in main_type_raw_data]
-
-	response['incident_target_group'] = [{
-		'count':i['count'],
-		'injured':i['injured'],
-		'violent':i['violent']+i['affected'],
-		'dead':i['dead'],
-		'main_target':i['main_target'],
-		'child':list(getSAMIncident(request, daterange, filterLock, flag, code, 'target', datafilter={'incident_target':[i['main_target']]}))
-	} for i in main_target_raw_data]
-
-	response['incident_list_100'] = getListIncidents(request, daterange, filterLock, flag, code)
+	if include_section('incident_list_100', includes, excludes):
+		response['incident_list_100'] = getListIncidents(request, daterange, filterLock, flag, code)
 
 	if include_section('GeoJson', includes, excludes):
 		response['GeoJson'] = getGeoJson(request, flag, code)
@@ -673,7 +679,7 @@ class getSAMParameters(ModelResource):
 			response['total_dead'] = resourceAgregate['dead']
 
 		response['values'] = []
-		response['values_titles'] = [_('Title')]+[_(CASUALTY_GROUP4_TYPES[i]) for i in ['count','dead','injured','violent',]]
+		response['values_titles'] = [_('Title')]+[_(CASUALTY_TYPES[i]) for i in ['count','dead','injured','violent',]]
 		if subgroup_title and len(resource):
 			group = {'title':resource[0][group_title],'values':[]}
 		for i in resource:
@@ -979,10 +985,10 @@ class getIncidentsRaw(ModelResource):
 
 		return none_to_zero(response)
 
-def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[], datafilter={}):
+def get_datafilter(source):
 
-	if 'daterange' in request.GET:
-		daterange = request.GET['daterange']
+	if 'daterange' in source:
+		daterange = source['daterange']
 	else:
 		enddate = datetime.date.today()
 		startdate = datetime.date.today() - datetime.timedelta(days=365)
@@ -990,49 +996,144 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 
 	datafilter = {
 		'daterange':daterange,
-		'incident_type':filter(None,request.GET.get('incident_type','').split(',')),
-		'incident_target':filter(None,request.GET.get('incident_target','').split(',')),	
+		'incident_type':filter(None,source.get('incident_type','').split(',')),
+		'incident_target':filter(None,source.get('incident_target','').split(',')),	
 	}
+
+	return datafilter
+
+def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[], datafilter={}, response=dict_ext()):
+
+	datafilter = datafilter or get_datafilter(request.GET)
 
 	# incident_type = request.GET.get('incident_type','').split(',')
 	# incident_target = request.GET.get('incident_target','').split(',')
 
-	response = dict_ext()
+	# response = dict_ext()
 
 	if include_section('getCommonUse', includes, excludes):
 		response.update(getCommonUse(request, flag, code))
 
-	response['source'] = source = dict_ext(getSecurity(request, filterLock, flag, code, includes=includes, excludes=excludes, datafilter=datafilter))
+	response['source'] = source = response.pathget('cache','getSecurity') or dict_ext(getSecurity(request, filterLock, flag, code, includes=includes, excludes=excludes, datafilter=datafilter))
 	panels = response.path('panels')
 	barcharts = response.path('panels','charts','bar')
 	spidercharts = response.path('panels','charts','spider')
 	tables = response.path('panels','tables')
 
-	titles = {
-		'number_of_casualties_by_incident_type':'Number of Casualties by Incident Type', 
-		'number_of_incidents_by_incident_type':'Number of Incidents by Incident Type'
-	}
-	for k,t in titles.items():
-		barcharts.path(k)['key'] = k
-		barcharts.path(k)['title'] = t
-		barcharts.path(k)['labels'] = source['incident_type']
-		barcharts.path(k)['child'] = [{
-			'name':CASUALTY_TYPES[t],
+	# titles = {
+	# 	'casualties':{
+	# 		'number_of_casualties_by_incident_type':'Number of Casualties by Incident Type',
+	# 		'number_of_casualties_by_target_type':'Number of Casualties by Target Type', 
+	# 	},
+	# 	'incidents':{
+	# 		'number_of_incidents_by_incident_type':'Number of Incidents by Incident Type',
+	# 		'number_of_incidents_by_target_type':'Number of Incidents by Target Type',
+	# }
+	# labels = {
+	# 	'type':source['incident_type'],
+	# 	'target':source['incident_target'],
+	# }
+	# numbersource = {
+	# 	'type':source['incident_type_group'],
+	# 	'target':source['incident_target_group'],
+	# }
+	# for k,t in titles.items():
+	# 	barcharts.path(k)['key'] = k
+	# 	barcharts.path(k)['title'] = t
+	# 	barcharts.path(k)['labels'] = source['incident_type']
+	# 	barcharts.path(k)['child'] = [{
+	# 		'name':CASUALTY_TYPES[t],
+	# 		'data':[i[t] for i in source['incident_type_group']]
+	# 	} for t in CASUALTY_TYPES_ORDER]
+
+	if source.containall('incident_type','incident_type_group'):
+
+		k = 'number_of_casualties_by_incident_type'
+		barcharts[k] = {
+			'key':k,
+			'title':'Number of Casualties by Incident Type',
+			'labels':source['incident_type'],
+			'child':[{
+				'name':CASUALTY_TYPES[t],
+				'data':[i[t] for i in source['incident_type_group']]
+			} for t in ['dead','injured']],
+		}
+
+		k = 'number_of_incidents_by_incident_type'
+		barcharts[k] = {
+			'key':k,
+			'title':'Number of Incidents by Incident Type',
+			'labels':source['incident_type'],
+			'child':[{
+				'name':CASUALTY_TYPES[t],
+				'data':[i[t] for i in source['incident_type_group']]
+			} for t in ['count','violent']],
+		}
+
+		chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_incident_type')
+		chart['key'] = 'graph_of_incident_and_casualties_trend_by_incident_type'
+		chart['title'] = 'Graph of Incident and Casualties Trend by Incident Type'
+		chart['labels'] = source['incident_type']
+		chart['labels_all'] = [{
+			'name':t['main_type'],
+			'count':t['count'],
+			'selected':t['main_type'] in source['incident_type'],
+		} for t in source['main_type_child']]
+		chart['child'] = [{
+			'type':CASUALTY_TYPES[t],
 			'data':[i[t] for i in source['incident_type_group']]
 		} for t in CASUALTY_TYPES_ORDER]
 
-	titles = {
-		'number_of_casualties_by_target_type':'Number of Casualties by Target Type', 
-		'number_of_incidents_by_target_type':'Number of Incidents by Target Type'
-	}
-	for k,t in titles.items():
-		barcharts.path(k)['key'] = k
-		barcharts.path(k)['title'] = t
-		barcharts.path(k)['labels'] = source['incident_target']
-		barcharts.path(k)['child'] = [{
-			'name':CASUALTY_TYPES[t],
+	if source.containall('incident_target','incident_target_group'):
+
+		k = 'number_of_casualties_by_target_type'
+		barcharts[k] = {
+			'key':k,
+			'title':'Number of Casualties by Target Type',
+			'labels':source['incident_target'],
+			'child':[{
+				'name':CASUALTY_TYPES[t],
+				'data':[i[t] for i in source['incident_target_group']]
+			} for t in ['dead','injured']],
+		}
+
+		k = 'number_of_incidents_by_target_type'
+		barcharts[k] = {
+			'key':k,
+			'title':'Number of Incidents by Target Type',
+			'labels':source['incident_target'],
+			'child':[{
+				'name':CASUALTY_TYPES[t],
+				'data':[i[t] for i in source['incident_target_group']]
+			} for t in ['count','violent']],
+		}
+
+		chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_target_type')
+		chart['key'] = 'graph_of_incident_and_casualties_trend_by_target_type'
+		chart['title'] = 'Graph of Incident and Casualties Trend by Target Type'
+		chart['labels'] = source['incident_target']
+		chart['labels_all'] = [{
+			'name':t['main_target'],
+			'count':t['count'],
+			'selected':t['main_target'] in source['incident_target'],
+		} for t in source['main_target_child']]
+		chart['child'] = [{
+			'type':CASUALTY_TYPES[t],
 			'data':[i[t] for i in source['incident_target_group']]
 		} for t in CASUALTY_TYPES_ORDER]
+
+	# titles = {
+	# 	'number_of_casualties_by_target_type':'Number of Casualties by Target Type', 
+	# 	'number_of_incidents_by_target_type':'Number of Incidents by Target Type'
+	# }
+	# for k,t in titles.items():
+	# 	barcharts.path(k)['key'] = k
+	# 	barcharts.path(k)['title'] = t
+	# 	barcharts.path(k)['labels'] = source['incident_target']
+	# 	barcharts.path(k)['child'] = [{
+	# 		'name':CASUALTY_TYPES[t],
+	# 		'data':[i[t] for i in source['incident_target_group']]
+	# 	} for t in CASUALTY_TYPES_ORDER]
 
 	# titles = {
 	# 	'graph_of_incident_and_casualties_trend_by_incident_type':'Graph of Incident and Casualties Trend by Incident Type', 
@@ -1047,73 +1148,50 @@ def dashboard_security(request, filterLock, flag, code, includes=[], excludes=[]
 	# 		'data':[i[t] for i in source['incident_type_group']]
 	# 	} for t in CASUALTY_TYPES_ORDER]
 
-	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_incident_type')
-	chart['key'] = 'graph_of_incident_and_casualties_trend_by_incident_type'
-	chart['title'] = 'Graph of Incident and Casualties Trend by Incident Type'
-	chart['labels'] = source['incident_type']
-	chart['labels_all'] = [{
-		'name':t['main_type'],
-		'count':t['count'],
-		'selected':t['main_type'] in source['incident_type'],
-	} for t in source['main_type_child']]
-	chart['child'] = [{
-		'type':CASUALTY_GROUP4_TYPES[t],
-		'data':[i[t] for i in source['incident_type_group']]
-	} for t in CASUALTY_GROUP4_TYPES_ORDER]
+	if source.containall('incident_target_group'):
+		table = tables['incidents_and_casualties_by_incident_type'] = dict_ext()
+		table['key'] = 'incidents_and_casualties_by_incident_type'
+		table['title'] = _('Incidents and Casualties by Incident Type')
+		table['child'] = []
+		for i in source['incident_type_group']:
+			table['child'] += [{
+				'isgroup':True,
+				'value':[i['main_type'],i['count'],i['violent'],i['injured'],i['dead']],
+			}] + [{
+				'value':[j['type'],j['count'],j['violent'],j['injured'],j['dead']],
+			} for j in i['child']]
 
-	chart = spidercharts.path('graph_of_incident_and_casualties_trend_by_target_type')
-	chart['key'] = 'graph_of_incident_and_casualties_trend_by_target_type'
-	chart['title'] = 'Graph of Incident and Casualties Trend by Target Type'
-	chart['labels'] = source['incident_target']
-	chart['labels_all'] = [{
-		'name':t['main_target'],
-		'count':t['count'],
-		'selected':t['main_target'] in source['incident_target'],
-	} for t in source['main_target_child']]
-	chart['child'] = [{
-		'type':CASUALTY_GROUP4_TYPES[t],
-		'data':[i[t] for i in source['incident_target_group']]
-	} for t in CASUALTY_GROUP4_TYPES_ORDER]
+	if source.containall('incident_target_group'):
+		table = tables['incident_and_casualties_trend_by_target_type'] = dict_ext()
+		table['key'] = 'incident_and_casualties_trend_by_target_type'
+		table['title'] = _('Incidents and Casualties by Target Type')
+		table['child'] = []
+		for i in source['incident_target_group']:
+			table['child'] += [{
+				'isgroup':True,
+				'value':[i['main_target'],i['count'],i['violent'],i['injured'],i['dead']],
+			}] + [{
+				'value':[j['target'],j['count'],j['violent'],j['injured'],j['dead']],
+			} for j in i['child']]
 
-	table = tables['incidents_and_casualties_by_incident_type'] = dict_ext()
-	chart['key'] = 'incidents_and_casualties_by_incident_type'
-	table['title'] = _('Incidents and Casualties by Incident Type')
-	table['child'] = []
-	for i in source['incident_type_group']:
-		table['child'] += [{
-			'isgroup':True,
-			'value':[i['main_type'],i['count'],i['violent'],i['injured'],i['dead']],
-		}] + [{
-			'value':[j['type'],j['count'],j['violent'],j['injured'],j['dead']],
-		} for j in i['child']]
-
-	table = tables['incident_and_casualties_trend_by_target_type'] = dict_ext()
-	chart['key'] = 'incident_and_casualties_trend_by_target_type'
-	table['title'] = _('Incidents and Casualties by Target Type')
-	table['child'] = []
-	for i in source['incident_target_group']:
-		table['child'] += [{
-			'isgroup':True,
-			'value':[i['main_target'],i['count'],i['violent'],i['injured'],i['dead']],
-		}] + [{
-			'value':[j['target'],j['count'],j['violent'],j['injured'],j['dead']],
-		} for j in i['child']]
-
-	tables['number_of_incident_and_casualties_overview'] = {
-		'title':_('Number of Incident and Casualties Overview'),
-		'key':'number_of_incident_and_casualties_overview',
-		'child':[{
-			'code':i['code'],
-			'value':[i['na_en'],i['total_incident'],i['total_violent'],i['total_injured'],i['total_dead']],
+	if source.containall('parent_label') and source.containall('lc_child','total_incident','total_violent','total_injured','total_dead'):
+		tables['number_of_incident_and_casualties_overview'] = {
+			'title':_('Number of Incident and Casualties Overview'),
+			'key':'number_of_incident_and_casualties_overview',
+			'parentdata':[response['parent_label'],source['total_incident'],source['total_violent'],source['total_injured'],source['total_dead']],
+			'child':[{
+				'code':i['code'],
+				'value':[i['na_en'],i['total_incident'],i['total_violent'],i['total_injured'],i['total_dead']],
+			}
+			for i in source['lc_child']],
 		}
-		for i in source['lc_child']],
-	}
 
-	tables['list_of_latest_incidents'] = {
-		'title':_('List of Latest Incidents'),
-		'key':'list_of_latest_incidents',
-		'child':[[i['incident_date'],i['description'],] for i in source['incident_list_100']],
-	}
+	if source.containall('incident_target','incident_list_100'):
+		tables['list_of_latest_incidents'] = {
+			'title':_('List of Latest Incidents'),
+			'key':'list_of_latest_incidents',
+			'child':[[i['incident_date'],i['description'],] for i in source['incident_list_100']],
+		}
 
 	if include_section('GeoJson', includes, excludes):
 		response['GeoJson'] = geojsonadd_security(response)
@@ -1201,3 +1279,17 @@ def geojsonadd_security(response):
 				prop.update(dict_ext(child).within('na_en','total_dead','total_incident','total_injured','total_violent'))
 
 	return boundary
+
+def getQuickOverview(request, filterLock, flag, code, response=dict_ext()):
+
+	datafilter = get_datafilter(request.GET)
+	
+	response.path('cache')['getSecurity'] = response.pathget('cache','getSecurity') or getSecurity(request, filterLock, flag, code, includes=['incident_type'], datafilter=datafilter, response=response.within('cache'))
+	dashboard_security_response = dashboard_security(request, filterLock, flag, code, includes=[''], datafilter=datafilter, response=response.within('cache','parent_label'))
+	
+	return {
+		'templates':{
+			'panels':'dash_qoview_security.html',
+		},
+		'data':dict_ext(dashboard_security_response).within('panels','eq_list','add_link'),
+	}

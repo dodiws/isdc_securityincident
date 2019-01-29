@@ -1,0 +1,55 @@
+{% load i18n %} {% load app_filters %}
+<div class="col s12">
+    <div class="card card-graph">
+        <div class="card-header red darken-3 white-text z-depth-2">
+            <span class="card-title">{{ title }}</span>
+        </div>
+        <div class="card-image">
+            <div class="row">
+                <div class="input-field col s12 xl5 offset-xl3">
+                    <div id="reportrange" class="grey-text text-darken-1" style="cursor: pointer; padding: 0px 10px; border: 1px solid; height: 28px;">
+                        <i class="fa fa-calendar"></i>&nbsp; {% trans "Incident between" %} :
+                        <i class="material-icons right">keyboard_arrow_down</i>
+                        <span></span>
+                        <b class="caret hidden-print"></b>
+                    </div>
+                </div>
+                <div class="col m6">
+                    <div id="chart_polar_{{ key }}" class="ch-size polar-chart" data-color='colorSecurity' data-xaxis='{{ labels | jsonify | safe }}'
+                        data-val='{{ values | jsonify | safe }}'></div>
+                </div>
+                <div class="col m4">
+                    <div class="card-panel z-depth-1 checkbox-group">
+                        <form class="parents-checkbox">
+                            <div class="right">
+                                <label class="panel-select-all">
+                                    <input type="checkbox" class="filled-in" checked="" />
+                                    <span>{% trans 'Select All' %}</span>
+                                </label>
+                                <button class="btn-flat btn-small waves-effect waves-light ply-trget" type="submit" name="action">Apply</button>
+                            </div>
+                            <span>{% trans 'Select Incident Type' %}</span>
+                        </form>
+
+                        <div class="">
+                            <div>
+                                {% get_current_language_bidi as LANGUAGE_BIDI %}
+                                <div id="indicatorType" class="row no-margin child-checkbox">
+                                    {% for item in labels_all %}
+                                    <div class="col s12 {{ LANGUAGE_BIDI | yesno:'rtl, ltr' }}">
+                                        <label>
+                                            <input type="checkbox" id="{{ categorisation }}{{ forloop.counter0 }}" class="filled-in checkIncident" name="main_{{ categorisation }}_select[]"
+                                                value="{{ item.name }}" {% if item.selected %}checked=true{% endif %}>
+                                            <span>{{ item.name }} ({{ item.count }} incidents)</span>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
