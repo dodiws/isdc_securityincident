@@ -523,7 +523,7 @@ def getSAMIncident(request, daterange, filterLock, flag, code, type_name, datafi
 		# affected is dummy for compatibility
 
 	print linenum(), 'type_name:%s'%(type_name)
-	print resource.query
+	# print resource.query
 
 	return resource
 
@@ -569,7 +569,7 @@ def getSAMParams(request, daterange, filterLock, flag, code, group, datafilter={
 			dead=Sum('dead')
 		).\
 		order_by(group)
-	print linenum(), resource.query
+	# print linenum(), resource.query
 
 	return resource
 
